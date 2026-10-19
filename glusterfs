@@ -133,6 +133,7 @@ def main():
             host=dict(required=False, default=None),
             stripe=dict(required=False, default=None, type='int'),
             replica=dict(required=False, default=None, type='int'),
+            arbiter=dict(require=False, default=None, type='int'),
             transport=dict(required=False, default='tcp', choices=[ 'tcp', 'rdma', 'tcp,rdma' ]),
             brick=dict(required=False, default=None),
             start=dict(required=False, default='1'),
@@ -153,6 +154,7 @@ def main():
     brick_path = module.params['brick']
     stripe = module.params['stripe']
     replica = module.params['replica']
+    arbiter = module.params['arbiter']
     transport = module.params['transport']
     myhostname = module.params['host']
     start_volume = module.boolean(module.params['start'])
@@ -281,7 +283,7 @@ def main():
                 if myhostname != host: 
                     probe(host)
 
-    def create_volume(name, stripe, replica, transport, hosts, brick):
+    def create_volume(name, stripe, replica, arbiter, transport, hosts, brick):
         args = [ 'volume', 'create' ]
         args.append(name)
         if stripe:
@@ -290,6 +292,9 @@ def main():
         if replica:
             args.append('replica')
             args.append(replica)
+        if arbiter:
+            args.append('arbiter')
+            args.append(arbiter)      
         args.append('transport')
         args.append(transport)
         for host in hosts:
@@ -326,7 +331,7 @@ def main():
     if action == 'create':
         probe_all_peers(hosts, peers)
         if volume_name not in volumes:
-            create_volume(volume_name, stripe, replica, transport, hosts, brick_path)
+            create_volume(volume_name, stripe, replica,arbiter, transport, hosts, brick_path)
             changed = True
             volumes = get_volumes()
         if volume_name in volumes:
